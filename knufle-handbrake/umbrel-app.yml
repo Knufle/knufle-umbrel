@@ -10,7 +10,6 @@ description: >-
   browser-based GUI and an automated watch folder.
 releaseNotes: >-
   This release includes improvements and bug fixes from the upstream image.
-
 developer: jlesage
 website: https://github.com/jlesage/docker-handbrake
 dependencies: []
@@ -22,9 +21,6 @@ gallery:
   - 2.jpg
   - 3.jpg
 path: ""
-defaultUsername: "umbrel"
-defaultPassword: ""
-deterministicPassword: true
 permissions:
   - STORAGE_DOWNLOADS
   - GPU
