@@ -1,5 +1,5 @@
 manifestVersion: 1.1
-id: handbrake
+id: knufle-umbrel-handbrake
 category: media
 name: HandBrake
 version: "26.01.1"
