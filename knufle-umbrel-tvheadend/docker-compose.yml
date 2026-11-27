@@ -16,22 +16,6 @@ services:
     command: |
       required_firmware=/host-firmware/sms1xxx-hcw-55xxx-isdbt-02.fw
       required_input=/host-firmware/isdbt_rio.inp
-      if [ ! -s "$$required_firmware" ] || [ ! -s "$$required_input" ]; then
-        apt-get update
-        apt-get install -y --no-install-recommends firmware-siano=20250410-2
-        while IFS= read -r source; do
-          case "$$source" in
-            /lib/firmware/*)
-              target=/host-firmware/$${source#/lib/firmware/}
-              mkdir -p "$$(dirname "$$target")"
-              install -m 0644 "$$source" "$$target"
-              ;;
-          esac
-        done <<EOF
-        $$(dpkg -L firmware-siano)
-        EOF
-        rm -rf /var/lib/apt/lists/*
-      fi
       [ -s "$$required_firmware" ]
       [ -s "$$required_input" ]
       rebound=0

@@ -29,17 +29,18 @@ Debian package: firmware-siano 20250410-2
 
 The firmware helper:
 
-1. checks the host `/lib/firmware`;
-2. installs the exact Debian package when either required file is missing;
-3. copies every file owned by `firmware-siano` into the host, including
-   `sms1xxx-hcw-55xxx-isdbt-02.fw` and `isdbt_rio.inp`;
-4. attempts to unbind and bind the S270's USB driver to request firmware again.
+1. an Umbrel `pre-start` hook runs on the host before Compose;
+2. the hook installs `firmware-siano=20250410-2` if either required file is
+   missing;
+3. the persistent container verifies `sms1xxx-hcw-55xxx-isdbt-02.fw` and
+   `isdbt_rio.inp`;
+4. it then attempts to unbind and bind the S270's USB driver and reports healthy.
 
-On Umbrel installations where the host root is reset during reboot, this helper
-repopulates the package files on each app start instead of assuming an earlier
-host-level Debian install remains available. Unlike a one-shot init container,
-it remains alive and is restarted by Umbrel; its healthcheck prevents Tvheadend
-from starting until both required firmware files exist.
+On Umbrel installations where the host root is reset during reboot, the
+`pre-start` hook repopulates the Debian package on every app start instead of
+assuming an earlier host-level installation remains available. The persistent
+helper remains alive for USB rebind and health reporting; Tvheadend does not
+start until both required firmware files exist.
 
 If the device did not exist during startup or the sysfs rebind is refused,
 unplug/replug the S270 once or restart Umbrel.

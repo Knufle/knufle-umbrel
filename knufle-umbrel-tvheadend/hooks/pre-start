@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eu
+
+firmware="/lib/firmware/sms1xxx-hcw-55xxx-isdbt-02.fw"
+input="/lib/firmware/isdbt_rio.inp"
+
+if [[ ! -s "${firmware}" || ! -s "${input}" ]]; then
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update
+  apt-get install -y --no-install-recommends firmware-siano=20250410-2
+fi
+
+test -s "${firmware}"
+test -s "${input}"
