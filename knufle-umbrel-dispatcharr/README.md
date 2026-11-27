@@ -20,13 +20,13 @@ http://knufle-umbrel-tvheadend_server_1:9981
 Plex's HDHomeRun source:
 
 ```text
-http://127.0.0.1:9191/hdhr/all
+http://192.168.68.50:9191/hdhr
 ```
 
-`127.0.0.1` is intentional. The official Umbrel Plex app uses host networking,
-so it reaches Dispatcharr through the published port without requiring a fixed
-Umbrel LAN address. For a Plex server on another machine, use the Umbrel LAN
-hostname or address explicitly instead.
+Use the Umbrel LAN address intentionally. Plex stores the request host in XMLTV
+channel-logo metadata, so `127.0.0.1` causes browser clients to look for the
+logos on their own computers. Replace the example address with the stable LAN
+hostname or address of your own Umbrel installation.
 
 ## Initial setup
 
@@ -66,10 +66,16 @@ In Plex:
 3. Enter the tuner URL manually:
 
    ```text
-   http://127.0.0.1:9191/hdhr/all
+   http://192.168.68.50:9191/hdhr
    ```
 
-4. Use Dispatcharr's XMLTV output if Plex cannot map the guide automatically.
+4. Use Dispatcharr's XMLTV output from the same Umbrel LAN address if Plex
+   cannot map the guide automatically:
+
+   ```text
+   http://192.168.68.50:9191/output/epg
+   ```
+
 5. Verify playback and recording before deleting the Arcane project.
 
 ## Important limitation

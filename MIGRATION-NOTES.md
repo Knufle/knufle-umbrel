@@ -96,8 +96,10 @@ The router was later given a persistent TCP forwarding rule:
 WAN 22669 -> 192.168.68.50:32400
 ```
 
-The new setup intentionally uses `127.0.0.1:9191` inside Umbrel so Plex does
-not depend on that LAN address for Live TV.
+The new setup uses `192.168.68.50:9191/hdhr` in Plex. Although the Plex server
+can reach Dispatcharr over loopback, Plex persists the request host in the
+channel-guide logo metadata. Using `127.0.0.1` makes web clients request logos
+from their own computers and leaves the channel column blank.
 
 ## Shutdown sequence
 

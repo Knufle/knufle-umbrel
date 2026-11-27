@@ -20,11 +20,12 @@ MyGica S270 (USB 187f:0600)
 ```
 
 The official Umbrel Plex app runs with host networking. Dispatcharr therefore
-publishes its HDHomeRun API on the Umbrel host at port `9191`, allowing Plex to
-use the stable loopback address:
+publishes its HDHomeRun API on the Umbrel host at port `9191`. Use the Umbrel
+LAN address so Plex stores channel-logo URLs that browser clients can also
+reach:
 
 ```text
-http://127.0.0.1:9191/hdhr/all
+http://192.168.68.50:9191/hdhr
 ```
 
 Dispatcharr reaches Tvheadend through Docker DNS:
@@ -33,7 +34,9 @@ Dispatcharr reaches Tvheadend through Docker DNS:
 http://knufle-umbrel-tvheadend_server_1:9981
 ```
 
-No LAN IP of the Umbrel server is required for the app-to-app connection.
+Do not configure Plex with `127.0.0.1`: Plex would save that loopback address in
+the guide metadata and a browser on another computer would try to load its logos
+from itself.
 
 ## Firmware
 

@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: media
 name: Dispatcharr
-version: "0.34.1-20261124235450"
+version: "0.34.1-20261124235450-patch.1"
 tagline: IPTV, EPG, and stream management for Plex
 description: >-
   Dispatcharr organizes M3U streams, XMLTV guides, and channel profiles, then
@@ -17,7 +17,9 @@ description: >-
 
   Add Tvheadend's channel playlist as a standard M3U account and its XMLTV URL as
   an EPG source. Use the channel profile named "all" and expose its HDHomeRun
-  URL to the official Umbrel Plex app at http://127.0.0.1:9191/hdhr/all.
+  URL to the official Umbrel Plex app at
+  http://<umbrel-lan-address>:9191/hdhr. Use the LAN address rather than
+  127.0.0.1 so Plex clients can load Dispatcharr channel logos.
 developer: Dispatcharr
 website: https://dispatcharr.github.io/Dispatcharr-Docs/
 dependencies: []
@@ -26,7 +28,10 @@ support: https://github.com/Dispatcharr/Dispatcharr/issues
 port: 9192
 gallery: []
 path: ""
-releaseNotes: ""
+releaseNotes: >-
+  Documents the LAN-accessible HDHomeRun and XMLTV URLs required by Plex. Plex
+  persists the request host in channel-logo metadata, so loopback URLs leave
+  the guide's channel-artwork column blank in browser clients.
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false
