@@ -23,16 +23,21 @@ The package targets:
 Vendor/product: 187f:0600
 Device: MyGica S270 / Siano Mobile Digital TV Receiver
 System: ISDB-T
-Firmware: sms1xxx-hcw-55xxx-isdbt-02.fw
+Firmware: sms1xxx-hcw-55xxx-isdbt-02.fw + isdbt_rio.inp
 Debian package: firmware-siano 20250410-2
 ```
 
 The firmware helper:
 
 1. checks the host `/lib/firmware`;
-2. installs the exact Debian package only when the firmware is missing;
-3. copies the requested firmware file into the host;
+2. installs the exact Debian package when either required file is missing;
+3. copies every file owned by `firmware-siano` into the host, including
+   `sms1xxx-hcw-55xxx-isdbt-02.fw` and `isdbt_rio.inp`;
 4. attempts to unbind and bind the S270's USB driver to request firmware again.
+
+On Umbrel installations where the host root is reset during reboot, this helper
+repopulates the package files on each app start instead of assuming an earlier
+host-level Debian install remains available.
 
 If the device did not exist during startup or the sysfs rebind is refused,
 unplug/replug the S270 once or restart Umbrel.

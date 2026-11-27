@@ -14,14 +14,26 @@ services:
       - /bin/sh
       - -ec
     command: |
-      target=/host-firmware/sms1xxx-hcw-55xxx-isdbt-02.fw
-      if [ ! -s "$$target" ]; then
+      required_firmware=/host-firmware/sms1xxx-hcw-55xxx-isdbt-02.fw
+      required_input=/host-firmware/isdbt_rio.inp
+      if [ ! -s "$$required_firmware" ] || [ ! -s "$$required_input" ]; then
         apt-get update
         apt-get install -y --no-install-recommends firmware-siano=20250410-2
-        install -m 0644 /lib/firmware/sms1xxx-hcw-55xxx-isdbt-02.fw "$$target"
+        while IFS= read -r source; do
+          case "$$source" in
+            /lib/firmware/*)
+              target=/host-firmware/$${source#/lib/firmware/}
+              mkdir -p "$$(dirname "$$target")"
+              install -m 0644 "$$source" "$$target"
+              ;;
+          esac
+        done <<EOF
+        $$(dpkg -L firmware-siano)
+        EOF
         rm -rf /var/lib/apt/lists/*
       fi
-      [ -s "$$target" ]
+      [ -s "$$required_firmware" ]
+      [ -s "$$required_input" ]
       rebound=0
       for device in /sys/bus/usb/devices/*; do
         [ -f "$$device/idVendor" ] || continue
@@ -38,7 +50,9 @@ services:
         rebound=1
       done
       if [ "$$rebound" -eq 0 ]; then
-        echo "Firmware is ready. Reconnect the tuner or reboot only if the S270 is not detected."
+        echo "Siano firmware package is ready. Reconnect the tuner if the S270 is not detected."
+      else
+        echo "Siano firmware package installed and MyGica S270 re-bound."
       fi
     volumes:
       - /lib/firmware:/host-firmware

@@ -9,14 +9,17 @@ does not contain passwords or generated credentials.
   `firmware-siano` version `20250410-2`.
 - The package added the required firmware file:
   `/lib/firmware/sms1xxx-hcw-55xxx-isdbt-02.fw`.
+- The Siano board also requests `/lib/firmware/isdbt_rio.inp` from the same
+  package. Umbrel reboots can remove the earlier host-level installation of
+  both files.
 - The tuner identified by the host was:
   - USB vendor: `187f`
   - USB product: `0600`
   - driver family: Siano `smsusb` / `smsmdtv` / `smsdvb`
   - DVB frontend: `Siano Mobile Digital MDTV Receiver`
-- No host-level firmware or DVB files should be removed before migrating the
-  new Tvheadend app. The new one-shot installer sees the existing file and
-  does not reinstall it.
+- The new Tvheadend app repopulates the full `firmware-siano` package on the host
+  when either required file is absent; do not rely on a one-time host package
+  installation surviving an Umbrel reboot.
 
 ## Arcane application
 
