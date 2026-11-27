@@ -18,8 +18,9 @@ does not contain passwords or generated credentials.
   - driver family: Siano `smsusb` / `smsmdtv` / `smsdvb`
   - DVB frontend: `Siano Mobile Digital MDTV Receiver`
 - The new Tvheadend app repopulates the full `firmware-siano` package on the host
-  when either required file is absent; do not rely on a one-time host package
-  installation surviving an Umbrel reboot.
+  when either required file is absent. Its persistent helper is healthchecked
+  and Tvheadend starts only after both files exist; do not rely on a one-time
+  host package installation surviving an Umbrel reboot.
 
 ## Arcane application
 

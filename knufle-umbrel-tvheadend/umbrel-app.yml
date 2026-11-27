@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: media
 name: Tvheadend
-version: "8837853a-patch.1"
+version: "8837853a-patch.2"
 tagline: DVB and ISDB-T tuner server for live TV
 description: >-
   Tvheadend turns a DVB tuner into a network TV and recording source. This package
@@ -36,10 +36,9 @@ port: 9981
 gallery: []
 path: ""
 releaseNotes: >-
-  Fixes Siano firmware preparation after Umbrel reboots. The installer now copies
-  the complete firmware-siano package, including isdbt_rio.inp, before
-  rebinding the MyGica S270. This prevents repeated DVB scan failures when the
-  host /lib/firmware directory is reset.
+  Keeps the firmware helper alive across Umbrel reboots and exposes a healthcheck
+  for both Siano files. Tvheadend now waits until isdbt_rio.inp and
+  sms1xxx-hcw-55xxx-isdbt-02.fw exist on the host before starting.
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false

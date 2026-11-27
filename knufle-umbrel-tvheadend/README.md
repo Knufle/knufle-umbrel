@@ -37,7 +37,9 @@ The firmware helper:
 
 On Umbrel installations where the host root is reset during reboot, this helper
 repopulates the package files on each app start instead of assuming an earlier
-host-level Debian install remains available.
+host-level Debian install remains available. Unlike a one-shot init container,
+it remains alive and is restarted by Umbrel; its healthcheck prevents Tvheadend
+from starting until both required firmware files exist.
 
 If the device did not exist during startup or the sysfs rebind is refused,
 unplug/replug the S270 once or restart Umbrel.
@@ -91,7 +93,7 @@ store submission.
 
 The official App Store linter reports five intentional warnings for this app:
 
-- the firmware service is one-shot and intentionally uses `restart: "no"`;
+- the firmware service remains alive so it runs again after host reboot;
 - the firmware helper needs privileged sysfs access to rebind the USB driver;
 - `/lib/firmware` is mounted because kernel firmware requests are resolved by
   the host, not by the container filesystem;
