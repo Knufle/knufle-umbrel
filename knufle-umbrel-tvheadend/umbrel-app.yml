@@ -1,0 +1,45 @@
+manifestVersion: 1
+id: knufle-umbrel-tvheadend
+storage:
+  dataRoot: data
+category: media
+name: Tvheadend
+version: "8837853a"
+tagline: DVB and ISDB-T tuner server for live TV
+description: >-
+  Tvheadend turns a DVB tuner into a network TV and recording source. This package
+  is configured for the MyGica S270 ISDB-T USB receiver used in Brazil
+  (USB 187f:0600) and installs the required Debian Siano firmware on the Umbrel
+  host when it is missing.
+
+
+  SETUP
+
+  Plug in the MyGica S270, install this app, and complete the Tvheadend setup
+  wizard. Select the ISDB-T network and the Brazilian mux list for São Paulo.
+  The app exposes Tvheadend to other Umbrel apps at
+  knufle-umbrel-tvheadend_server_1:9981. Use the Dispatcharr app to present
+  channels as an HDHomeRun tuner to Plex.
+
+
+  NOTE
+
+  Tvheadend uses the host's DVB kernel driver and requires privileged USB access.
+  The one-shot firmware installer writes firmware-siano 20250410-2 to the host
+  /lib/firmware directory only if the required file is absent.
+developer: Tvheadend
+website: https://tvheadend.org/
+dependencies: []
+repo: https://github.com/tvheadend/tvheadend
+support: https://github.com/tvheadend/tvheadend/issues
+port: 9981
+gallery: []
+path: ""
+releaseNotes: ""
+defaultUsername: ""
+defaultPassword: ""
+torOnly: false
+permissions: []
+submitter: Knufle
+submission: https://github.com/getumbrel/umbrel-apps/pull/XXXX
+icon: https://cdn.jsdelivr.net/gh/selfhst/icons/png/tvheadend.png

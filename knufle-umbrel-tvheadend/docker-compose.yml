@@ -1,0 +1,60 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: knufle-umbrel-tvheadend_server_1
+      APP_PORT: 9981
+
+  firmware:
+    image: debian:trixie-20261123-slim@sha256:8aa5a7bf5a1955bddbe7d74fcdd0b91ab30e74362a8b73af672b0481b35b44a0
+    privileged: true
+    restart: "no"
+    entrypoint:
+      - /bin/sh
+      - -ec
+    command: |
+      target=/host-firmware/sms1xxx-hcw-55xxx-isdbt-02.fw
+      if [ ! -s "$$target" ]; then
+        apt-get update
+        apt-get install -y --no-install-recommends firmware-siano=20250410-2
+        install -m 0644 /lib/firmware/sms1xxx-hcw-55xxx-isdbt-02.fw "$$target"
+        rm -rf /var/lib/apt/lists/*
+      fi
+      [ -s "$$target" ]
+      rebound=0
+      for device in /sys/bus/usb/devices/*; do
+        [ -f "$$device/idVendor" ] || continue
+        [ -f "$$device/idProduct" ] || continue
+        [ "$$(cat "$$device/idVendor")" = "187f" ] || continue
+        [ "$$(cat "$$device/idProduct")" = "0600" ] || continue
+        device_name="$$(basename "$$device")"
+        driver_link="$$device/driver"
+        [ -L "$$driver_link" ] || continue
+        driver_path="$$(readlink -f "$$driver_link")"
+        printf '%s' "$$device_name" > "$$driver_path/unbind" 2>/dev/null || true
+        sleep 1
+        printf '%s' "$$device_name" > "$$driver_path/bind" 2>/dev/null || true
+        rebound=1
+      done
+      if [ "$$rebound" -eq 0 ]; then
+        echo "Firmware is ready. Reconnect the tuner or reboot only if the S270 is not detected."
+      fi
+    volumes:
+      - /lib/firmware:/host-firmware
+      - /sys:/sys
+
+  server:
+    image: linuxserver/tvheadend:version-8837853a@sha256:989fd717b2b143b8861ab60c31053c1d3542368532af1d429e996fa61e4fc04b
+    privileged: true
+    depends_on:
+      firmware:
+        condition: service_completed_successfully
+    restart: on-failure
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ${APP_DATA_DIR}/data/config:/config
+      - ${APP_DATA_DIR}/data/recordings:/recordings

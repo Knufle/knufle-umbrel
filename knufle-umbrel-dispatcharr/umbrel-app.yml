@@ -1,0 +1,36 @@
+manifestVersion: 1
+id: knufle-umbrel-dispatcharr
+storage:
+  dataRoot: data
+category: media
+name: Dispatcharr
+version: "0.34.1-20261124235450"
+tagline: IPTV, EPG, and stream management for Plex
+description: >-
+  Dispatcharr organizes M3U streams, XMLTV guides, and channel profiles, then
+  presents them to Plex, Jellyfin, Emby, or ChannelsDVR through an emulated
+  HDHomeRun tuner. It is intended to sit between Tvheadend and Plex in the
+  Knufle Umbrel TV stack.
+
+
+  SETUP WITH TVHEADEND
+
+  Add Tvheadend's channel playlist as a standard M3U account and its XMLTV URL as
+  an EPG source. Use the channel profile named "all" and expose its HDHomeRun
+  URL to the official Umbrel Plex app at http://127.0.0.1:9191/hdhr/all.
+developer: Dispatcharr
+website: https://dispatcharr.github.io/Dispatcharr-Docs/
+dependencies: []
+repo: https://github.com/Dispatcharr/Dispatcharr
+support: https://github.com/Dispatcharr/Dispatcharr/issues
+port: 9192
+gallery: []
+path: ""
+releaseNotes: ""
+defaultUsername: ""
+defaultPassword: ""
+torOnly: false
+permissions: []
+submitter: Knufle
+submission: https://github.com/getumbrel/umbrel-apps/pull/XXXX
+icon: https://raw.githubusercontent.com/Dispatcharr/Dispatcharr/main/frontend/src/images/logo.png
