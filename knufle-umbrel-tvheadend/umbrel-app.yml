@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: media
 name: Tvheadend
-version: "8837853a-patch.3"
+version: "8837853a-patch.4"
 tagline: DVB and ISDB-T tuner server for live TV
 description: >-
   Tvheadend turns a DVB tuner into a network TV and recording source. This package
@@ -36,9 +36,10 @@ port: 9981
 gallery: []
 path: ""
 releaseNotes: >-
-  Adds an Umbrel pre-start hook that reinstalls firmware-siano on the host
-  before Compose starts when either Siano file is missing. The container helper
-  now verifies the files and performs only the USB rebind.
+  Simplifies firmware management to a single Umbrel pre-start hook. The hook
+  restores firmware-siano on the host, verifies both required files, and
+  rebinds the S270 before the Tvheadend container starts. The redundant
+  firmware sidecar has been removed.
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false

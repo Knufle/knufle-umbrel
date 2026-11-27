@@ -27,20 +27,20 @@ Firmware: sms1xxx-hcw-55xxx-isdbt-02.fw + isdbt_rio.inp
 Debian package: firmware-siano 20250410-2
 ```
 
-The firmware helper:
+Firmware preparation:
 
 1. an Umbrel `pre-start` hook runs on the host before Compose;
 2. the hook installs `firmware-siano=20250410-2` if either required file is
    missing;
-3. the persistent container verifies `sms1xxx-hcw-55xxx-isdbt-02.fw` and
-   `isdbt_rio.inp`;
-4. it then attempts to unbind and bind the S270's USB driver and reports healthy.
+3. it verifies `sms1xxx-hcw-55xxx-isdbt-02.fw` and `isdbt_rio.inp`;
+4. it attempts to unbind and bind the S270's USB driver;
+5. only then does Umbrel start Tvheadend.
 
 On Umbrel installations where the host root is reset during reboot, the
 `pre-start` hook repopulates the Debian package on every app start instead of
-assuming an earlier host-level installation remains available. The persistent
-helper remains alive for USB rebind and health reporting; Tvheadend does not
-start until both required firmware files exist.
+assuming an earlier host-level installation remains available. There is no
+firmware sidecar: one hook prepares and rebinds the device before the Tvheadend
+container starts.
 
 If the device did not exist during startup or the sysfs rebind is refused,
 unplug/replug the S270 once or restart Umbrel.
@@ -83,7 +83,7 @@ major/minor `mknod` values are required.
 
 ## Permissions
 
-The firmware helper and Tvheadend are privileged because:
+Tvheadend is privileged and the pre-start hook accesses host sysfs because:
 
 - host kernel firmware lives outside the container;
 - USB driver rebind uses host sysfs;
@@ -94,8 +94,8 @@ store submission.
 
 The official App Store linter reports five intentional warnings for this app:
 
-- the firmware service remains alive so it runs again after host reboot;
-- the firmware helper needs privileged sysfs access to rebind the USB driver;
+- the hook needs host access to restore `/lib/firmware` and rebind the USB
+  driver;
 - `/lib/firmware` is mounted because kernel firmware requests are resolved by
   the host, not by the container filesystem;
 - `/sys` is mounted to locate and rebind `187f:0600`;

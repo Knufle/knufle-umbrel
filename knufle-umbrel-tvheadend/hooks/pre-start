@@ -13,3 +13,17 @@ fi
 
 test -s "${firmware}"
 test -s "${input}"
+
+for device in /sys/bus/usb/devices/*; do
+  [[ -f "${device}/idVendor" ]] || continue
+  [[ -f "${device}/idProduct" ]] || continue
+  [[ "$(cat "${device}/idVendor")" == "187f" ]] || continue
+  [[ "$(cat "${device}/idProduct")" == "0600" ]] || continue
+  [[ -L "${device}/driver" ]] || continue
+
+  device_name="$(basename "${device}")"
+  driver_path="$(readlink -f "${device}/driver")"
+  printf '%s' "${device_name}" > "${driver_path}/unbind" 2>/dev/null || true
+  sleep 1
+  printf '%s' "${device_name}" > "${driver_path}/bind" 2>/dev/null || true
+done
