@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: media
 name: Tvheadend
-version: "8837853a-patch.5"
+version: "8837853a-patch.6"
 tagline: DVB and ISDB-T tuner server for live TV
 description: >-
   Tvheadend turns a DVB tuner into a network TV and recording source. This package
@@ -36,9 +36,10 @@ port: 9981
 gallery: []
 path: ""
 releaseNotes: >-
-  Adds an internal XMLTV bridge backed by Tvheadend's EPG events API. This
-  preserves OTA programmes that the legacy /xmltv/channels exporter omits
-  when the broadcast supplies subtitle or description without a title.
+  Repairs Brazilian ISDB-T EPG character encoding in the XMLTV bridge and
+  documents the ISO-8859-1 network character set required to prevent future
+  mojibake. The bridge continues to provide complete real EPG plus fallback
+  entries for channels without OTA guide data.
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false

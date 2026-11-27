@@ -20,6 +20,32 @@ _xml_bytes = b""
 _xml_error = "XMLTV has not been generated yet"
 _lock = threading.Lock()
 
+_DVB_LATIN1_REPAIRS = str.maketrans(
+    {
+        "ª": "ã",
+        "Ŀ": "ç",
+        "Ŧ": "í",
+        "Ø": "é",
+        "Æ": "á",
+        "ð": "ó",
+        "œ": "ú",
+        "ı": "õ",
+        "Ð": "â",
+        "Œ": "ê",
+        "ħ": "ô",
+        "Ô": "ã",
+        "Ω": "à",
+        "©": "ó",
+        "´": "á",
+        "Ń": "â",
+        "“": "ª",
+        "”": "º",
+        "Ù": "á",
+        "♪": "õ",
+        "™": "ô",
+    }
+)
+
 
 def fetch_json(path):
     with urllib.request.urlopen(f"{TVHEADEND_URL}{path}", timeout=30) as response:
@@ -32,6 +58,10 @@ def fallback_title(event):
         if value:
             return value
     return event["channelName"]
+
+
+def clean_text(value):
+    return str(value or "").translate(_DVB_LATIN1_REPAIRS).strip()
 
 
 def xmltv_time(timestamp):
@@ -80,15 +110,17 @@ def build_xmltv():
             start=xmltv_time(start),
             stop=xmltv_time(stop),
         )
-        ET.SubElement(programme, "title", lang="pt").text = fallback_title(event)
+        ET.SubElement(programme, "title", lang="pt").text = clean_text(
+            fallback_title(event)
+        )
         if event.get("subtitle"):
-            ET.SubElement(programme, "sub-title", lang="pt").text = str(
+            ET.SubElement(programme, "sub-title", lang="pt").text = clean_text(
                 event["subtitle"]
-            ).strip()
+            )
         if event.get("description"):
-            ET.SubElement(programme, "desc", lang="pt").text = str(
+            ET.SubElement(programme, "desc", lang="pt").text = clean_text(
                 event["description"]
-            ).strip()
+            )
         for category in event.get("genre") or []:
             ET.SubElement(programme, "category", lang="pt").text = str(category)
         if event.get("ageRating") is not None:
@@ -109,7 +141,9 @@ def build_xmltv():
                 start=xmltv_time(start),
                 stop=xmltv_time(start + 7200),
             )
-            ET.SubElement(programme, "title", lang="pt").text = channel["name"]
+            ET.SubElement(programme, "title", lang="pt").text = clean_text(
+                channel["name"]
+            )
             ET.SubElement(programme, "desc", lang="pt").text = (
                 "Programação em direto. O guia OTA não forneceu dados detalhados."
             )

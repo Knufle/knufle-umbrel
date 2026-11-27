@@ -50,11 +50,15 @@ unplug/replug the S270 once or restart Umbrel.
 1. Open the app and complete the wizard.
 2. Select the `ISDB-T` network.
 3. Use the predefined Brazilian São Paulo mux list.
-4. Scan in small batches. Do not start all available frequencies at once when
+4. Edit the network at Expert level and set **Character set** to
+   `ISO-8859-1`. Brazilian ISDB-T EIT data from these muxes is decoded through
+   ISO-6937 incorrectly when it remains on `AUTO`, producing text such as
+   `FØ`, `notŦcias`, and `regiªo`.
+5. Scan in small batches. Do not start all available frequencies at once when
    using one USB tuner.
-5. Map only services with usable video. Do not blindly map every `{PMT:...}`
+6. Map only services with usable video. Do not blindly map every `{PMT:...}`
    fallback service.
-6. Create a limited Tvheadend user for Dispatcharr with permission to:
+7. Create a limited Tvheadend user for Dispatcharr with permission to:
    - stream;
    - read the channel grid;
    - download M3U/XMLTV endpoints.
