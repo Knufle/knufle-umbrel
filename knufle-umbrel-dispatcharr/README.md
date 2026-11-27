@@ -41,8 +41,14 @@ hostname or address explicitly instead.
 4. Add an XMLTV source with Tvheadend's endpoint:
 
    ```text
-   http://knufle-umbrel-tvheadend_server_1:9981/xmltv/channels
+   http://knufle-umbrel-tvheadend_epg_1:9983/xmltv.xml
    ```
+
+   This Tvheadend app endpoint reads the same EPG events shown in the
+   Tvheadend UI. It is preferred to the legacy `/xmltv/channels` endpoint,
+   which can omit OTA events that contain only subtitle/description fields.
+   It also generates clearly identified placeholder blocks for channels whose
+   OTA signal provides no guide data, avoiding Plex's `Unknown Airing`.
 
 5. If Tvheadend requires authentication, use a dedicated streaming user rather
    than the administrator and enter its credentials in the M3U account.

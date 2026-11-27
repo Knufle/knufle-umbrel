@@ -68,8 +68,16 @@ http://knufle-umbrel-tvheadend_server_1:9981/playlist/channels.m3u?profile=pass
 Suggested XMLTV URL:
 
 ```text
-http://knufle-umbrel-tvheadend_server_1:9981/xmltv/channels
+http://knufle-umbrel-tvheadend_epg_1:9983/xmltv.xml
 ```
+
+The bridge endpoint is preferred over Tvheadend's legacy
+`/xmltv/channels` export. Tvheadend displays events collected by OTA EIT, but
+its legacy XMLTV exporter can omit events without a `title`. The bridge reads
+`/api/epg/events/grid`, fills a safe title from title/subtitle/description, and
+exports all enabled channels to Dispatcharr. Channels with no OTA EPG receive
+two-hour placeholder programmes so clients such as Plex continue to identify
+the current channel instead of showing `Unknown Airing`.
 
 If authentication is required, embed or supply the limited Dispatcharr
 credentials in Dispatcharr's M3U account. Do not use the Tvheadend admin user.

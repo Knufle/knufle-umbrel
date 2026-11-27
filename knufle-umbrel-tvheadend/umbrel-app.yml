@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: media
 name: Tvheadend
-version: "8837853a-patch.4"
+version: "8837853a-patch.5"
 tagline: DVB and ISDB-T tuner server for live TV
 description: >-
   Tvheadend turns a DVB tuner into a network TV and recording source. This package
@@ -36,10 +36,9 @@ port: 9981
 gallery: []
 path: ""
 releaseNotes: >-
-  Simplifies firmware management to a single Umbrel pre-start hook. The hook
-  restores firmware-siano on the host, verifies both required files, and
-  rebinds the S270 before the Tvheadend container starts. The redundant
-  firmware sidecar has been removed.
+  Adds an internal XMLTV bridge backed by Tvheadend's EPG events API. This
+  preserves OTA programmes that the legacy /xmltv/channels exporter omits
+  when the broadcast supplies subtitle or description without a title.
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false

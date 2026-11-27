@@ -17,3 +17,15 @@ services:
     volumes:
       - ${APP_DATA_DIR}/data/config:/config
       - ${APP_DATA_DIR}/data/recordings:/recordings
+
+  epg:
+    image: python:3.13.13-alpine3.22@sha256:e81548ac35b07a3bd4805f275107592ef458b1e893c0e04d45aedaa19416cca5
+    restart: on-failure
+    depends_on:
+      - server
+    command: python /app/epg-server.py
+    environment:
+      - TVHEADEND_URL=http://server:9981
+      - BIND_PORT=9983
+    volumes:
+      - ${APP_DATA_DIR}/epg-server.py:/app/epg-server.py:ro
