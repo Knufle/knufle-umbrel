@@ -81,7 +81,9 @@ its legacy XMLTV exporter can omit events without a `title`. The bridge reads
 `/api/epg/events/grid`, fills a safe title from title/subtitle/description, and
 exports all enabled channels to Dispatcharr. Channels with no OTA EPG receive
 two-hour placeholder programmes so clients such as Plex continue to identify
-the current channel instead of showing `Unknown Airing`.
+the current channel instead of showing `Unknown Airing`. Channel icons use the
+stable container DNS name so Dispatcharr can cache them after Tvheadend moves to
+a different internal IP.
 
 If authentication is required, embed or supply the limited Dispatcharr
 credentials in Dispatcharr's M3U account. Do not use the Tvheadend admin user.

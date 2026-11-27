@@ -13,6 +13,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 
 TVHEADEND_URL = os.environ.get("TVHEADEND_URL", "http://server:9981").rstrip("/")
+TVHEADEND_PUBLIC_URL = os.environ.get(
+    "TVHEADEND_PUBLIC_URL",
+    "http://knufle-umbrel-tvheadend_server_1:9981",
+).rstrip("/")
 BIND_PORT = int(os.environ.get("BIND_PORT", "9983"))
 REFRESH_SECONDS = int(os.environ.get("REFRESH_SECONDS", "300"))
 
@@ -88,6 +92,13 @@ def build_xmltv():
     for channel in sorted(channels, key=lambda item: item["name"].casefold()):
         node = ET.SubElement(root, "channel", id=channel["uuid"])
         ET.SubElement(node, "display-name", lang="pt").text = channel["name"]
+        icon_path = channel.get("icon_public_url")
+        if icon_path:
+            ET.SubElement(
+                node,
+                "icon",
+                src=f"{TVHEADEND_PUBLIC_URL}/{icon_path.lstrip('/')}",
+            )
         number = channel.get("number")
         if number not in (None, "", 0, "0"):
             ET.SubElement(node, "display-name").text = str(number)

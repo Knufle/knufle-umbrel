@@ -26,6 +26,7 @@ services:
     command: python /app/epg-server.py
     environment:
       - TVHEADEND_URL=http://server:9981
+      - TVHEADEND_PUBLIC_URL=http://knufle-umbrel-tvheadend_server_1:9981
       - BIND_PORT=9983
     volumes:
       - ${APP_DATA_DIR}/epg-server.py:/app/epg-server.py:ro
