@@ -2,12 +2,14 @@
 
 import json
 import os
+import struct
 import sys
 import threading
 import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+import zlib
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -17,12 +19,59 @@ TVHEADEND_PUBLIC_URL = os.environ.get(
     "TVHEADEND_PUBLIC_URL",
     "http://knufle-umbrel-tvheadend_server_1:9981",
 ).rstrip("/")
+EPG_PUBLIC_URL = os.environ.get(
+    "EPG_PUBLIC_URL",
+    "http://knufle-umbrel-tvheadend_epg_1:9983",
+).rstrip("/")
 BIND_PORT = int(os.environ.get("BIND_PORT", "9983"))
 REFRESH_SECONDS = int(os.environ.get("REFRESH_SECONDS", "300"))
 
 _xml_bytes = b""
+_logos = {}
 _xml_error = "XMLTV has not been generated yet"
 _lock = threading.Lock()
+
+_FONT = {
+    "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
+    "B": ("11110", "10001", "10001", "11110", "10001", "10001", "11110"),
+    "C": ("01111", "10000", "10000", "10000", "10000", "10000", "01111"),
+    "D": ("11110", "10001", "10001", "10001", "10001", "10001", "11110"),
+    "E": ("11111", "10000", "10000", "11110", "10000", "10000", "11111"),
+    "F": ("11111", "10000", "10000", "11110", "10000", "10000", "10000"),
+    "G": ("01111", "10000", "10000", "10111", "10001", "10001", "01111"),
+    "H": ("10001", "10001", "10001", "11111", "10001", "10001", "10001"),
+    "I": ("11111", "00100", "00100", "00100", "00100", "00100", "11111"),
+    "J": ("00111", "00010", "00010", "00010", "10010", "10010", "01100"),
+    "K": ("10001", "10010", "10100", "11000", "10100", "10010", "10001"),
+    "L": ("10000", "10000", "10000", "10000", "10000", "10000", "11111"),
+    "M": ("10001", "11011", "10101", "10101", "10001", "10001", "10001"),
+    "N": ("10001", "11001", "10101", "10011", "10001", "10001", "10001"),
+    "O": ("01110", "10001", "10001", "10001", "10001", "10001", "01110"),
+    "P": ("11110", "10001", "10001", "11110", "10000", "10000", "10000"),
+    "Q": ("01110", "10001", "10001", "10001", "10101", "10010", "01101"),
+    "R": ("11110", "10001", "10001", "11110", "10100", "10010", "10001"),
+    "S": ("01111", "10000", "10000", "01110", "00001", "00001", "11110"),
+    "T": ("11111", "00100", "00100", "00100", "00100", "00100", "00100"),
+    "U": ("10001", "10001", "10001", "10001", "10001", "10001", "01110"),
+    "V": ("10001", "10001", "10001", "10001", "10001", "01010", "00100"),
+    "W": ("10001", "10001", "10001", "10101", "10101", "10101", "01010"),
+    "X": ("10001", "10001", "01010", "00100", "01010", "10001", "10001"),
+    "Y": ("10001", "10001", "01010", "00100", "00100", "00100", "00100"),
+    "Z": ("11111", "00001", "00010", "00100", "01000", "10000", "11111"),
+    "0": ("01110", "10001", "10011", "10101", "11001", "10001", "01110"),
+    "1": ("00100", "01100", "00100", "00100", "00100", "00100", "01110"),
+    "2": ("01110", "10001", "00001", "00010", "00100", "01000", "11111"),
+    "3": ("11110", "00001", "00001", "01110", "00001", "00001", "11110"),
+    "4": ("00010", "00110", "01010", "10010", "11111", "00010", "00010"),
+    "5": ("11111", "10000", "10000", "11110", "00001", "00001", "11110"),
+    "6": ("01110", "10000", "10000", "11110", "10001", "10001", "01110"),
+    "7": ("11111", "00001", "00010", "00100", "01000", "01000", "01000"),
+    "8": ("01110", "10001", "10001", "01110", "10001", "10001", "01110"),
+    "9": ("01110", "10001", "10001", "01111", "00001", "00001", "01110"),
+    "-": ("00000", "00000", "00000", "11111", "00000", "00000", "00000"),
+    ".": ("00000", "00000", "00000", "00000", "00000", "00100", "00100"),
+    "?": ("01110", "10001", "00001", "00010", "00100", "00000", "00100"),
+}
 
 _DVB_LATIN1_REPAIRS = str.maketrans(
     {
@@ -54,6 +103,73 @@ _DVB_LATIN1_REPAIRS = str.maketrans(
 def fetch_json(path):
     with urllib.request.urlopen(f"{TVHEADEND_URL}{path}", timeout=30) as response:
         return json.load(response)
+
+
+def png_chunk(kind, payload):
+    checksum = zlib.crc32(kind + payload) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", checksum)
+
+
+def label_logo(label):
+    text = str(label or "?").upper()
+    scale = 4
+    spacing = 2
+    text_width = sum(6 if character != " " else 3 for character in text) - spacing
+    width = max(160, text_width * scale + 24)
+    height = 52
+    pixels = bytearray(width * height * 4)
+    offset_x = (width - text_width * scale) // 2
+    offset_y = (height - 7 * scale) // 2
+
+    cursor = offset_x
+    for character in text:
+        if character == " ":
+            cursor += 3 * scale
+            continue
+        glyph = _FONT.get(character, _FONT["?"])
+        for row, bits in enumerate(glyph):
+            for column, bit in enumerate(bits):
+                if bit != "1":
+                    continue
+                for pixel_y in range(scale):
+                    for pixel_x in range(scale):
+                        index = (
+                            (offset_y + row * scale + pixel_y) * width
+                            + cursor
+                            + column * scale
+                            + pixel_x
+                        ) * 4
+                        pixels[index : index + 4] = b"\xff\xff\xff\xff"
+        cursor += 6 * scale
+
+    scanlines = bytearray()
+    stride = width * 4
+    for row in range(height):
+        scanlines.append(0)
+        scanlines.extend(pixels[row * stride : (row + 1) * stride])
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + png_chunk(b"IHDR", header)
+        + png_chunk(b"IDAT", zlib.compress(bytes(scanlines), 9))
+        + png_chunk(b"IEND", b"")
+    )
+
+
+def available_icon(channel):
+    path = channel.get("icon_public_url")
+    if not path:
+        return None
+    url = f"{TVHEADEND_PUBLIC_URL}/{path.lstrip('/')}"
+    try:
+        request = urllib.request.Request(url, method="HEAD")
+        with urllib.request.urlopen(request, timeout=5) as response:
+            if 200 <= response.status < 300:
+                return url
+    except (OSError, urllib.error.URLError):
+        pass
+    return None
 
 
 def fallback_title(event):
@@ -89,16 +205,15 @@ def build_xmltv():
     root.set("generator-info-name", "Tvheadend EPG Bridge")
     root.set("source-info-name", "Tvheadend /api/epg/events/grid")
 
+    logos = {}
     for channel in sorted(channels, key=lambda item: item["name"].casefold()):
         node = ET.SubElement(root, "channel", id=channel["uuid"])
         ET.SubElement(node, "display-name", lang="pt").text = channel["name"]
-        icon_path = channel.get("icon_public_url")
-        if icon_path:
-            ET.SubElement(
-                node,
-                "icon",
-                src=f"{TVHEADEND_PUBLIC_URL}/{icon_path.lstrip('/')}",
-            )
+        icon_url = available_icon(channel)
+        if icon_url is None:
+            icon_url = f"{EPG_PUBLIC_URL}/logo/{channel['uuid']}.png"
+            logos[channel["uuid"]] = label_logo(channel["name"])
+        ET.SubElement(node, "icon", src=icon_url)
         number = channel.get("number")
         if number not in (None, "", 0, "0"):
             ET.SubElement(node, "display-name").text = str(number)
@@ -159,16 +274,17 @@ def build_xmltv():
                 "Programação em direto. O guia OTA não forneceu dados detalhados."
             )
 
-    return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    return ET.tostring(root, encoding="utf-8", xml_declaration=True), logos
 
 
 def refresh_loop():
-    global _xml_bytes, _xml_error
+    global _xml_bytes, _logos, _xml_error
     while True:
         try:
-            current = build_xmltv()
+            current, logos = build_xmltv()
             with _lock:
                 _xml_bytes = current
+                _logos = logos
                 _xml_error = ""
             print(
                 f"refreshed XMLTV: {len(current)} bytes",
@@ -183,7 +299,22 @@ def refresh_loop():
 
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.split("?", 1)[0] not in ("/", "/xmltv.xml"):
+        path = self.path.split("?", 1)[0]
+        if path.startswith("/logo/") and path.endswith(".png"):
+            channel_id = path[len("/logo/") : -len(".png")]
+            with _lock:
+                body = _logos.get(channel_id)
+            if body:
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "public, max-age=300")
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                self.send_error(404)
+            return
+        if path not in ("/", "/xmltv.xml"):
             self.send_error(404)
             return
         with _lock:
@@ -203,8 +334,9 @@ class Handler(BaseHTTPRequestHandler):
         print(f"{self.address_string()} - {message % args}", flush=True)
 
 
-if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "--once":
-    sys.stdout.buffer.write(build_xmltv())
-else:
-    threading.Thread(target=refresh_loop, daemon=True).start()
-    ThreadingHTTPServer(("0.0.0.0", BIND_PORT), Handler).serve_forever()
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--once":
+        sys.stdout.buffer.write(build_xmltv()[0])
+    else:
+        threading.Thread(target=refresh_loop, daemon=True).start()
+        ThreadingHTTPServer(("0.0.0.0", BIND_PORT), Handler).serve_forever()

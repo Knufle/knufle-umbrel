@@ -83,7 +83,9 @@ exports all enabled channels to Dispatcharr. Channels with no OTA EPG receive
 two-hour placeholder programmes so clients such as Plex continue to identify
 the current channel instead of showing `Unknown Airing`. Channel icons use the
 stable container DNS name so Dispatcharr can cache them after Tvheadend moves to
-a different internal IP.
+a different internal IP. When an original logo is unavailable, the bridge
+serves a generated text picon instead, so Plex still identifies the channel in
+the first guide column.
 
 If authentication is required, embed or supply the limited Dispatcharr
 credentials in Dispatcharr's M3U account. Do not use the Tvheadend admin user.
